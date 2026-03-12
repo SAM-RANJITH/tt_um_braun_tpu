@@ -14,6 +14,7 @@ output wire [15:0] c00,
 output wire [15:0] c01,
 output wire [15:0] c10,
 output wire [15:0] c11
+
 );
 
 wire [7:0] a00,a01,a10,a11;
