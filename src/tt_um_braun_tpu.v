@@ -15,9 +15,13 @@ module tt_um_braun_tpu (
 
 wire rst = ~rst_n;
 
+// Matrix inputs
 wire [7:0] a0,a1,b0,b1;
+
+// Results
 wire [15:0] c00,c01,c10,c11;
 
+// simple memory
 memory mem(
     .clk(clk),
     .data_in(ui_in),
@@ -29,6 +33,7 @@ memory mem(
     .b1(b1)
 );
 
+// compute array
 systolic_array_2x2 array(
     .clk(clk),
     .rst(rst),
@@ -42,8 +47,11 @@ systolic_array_2x2 array(
     .c11(c11)
 );
 
-assign uo_out = c00[7:0];
+// outputs
+assign uo_out  = c00[7:0];
 assign uio_out = c01[7:0];
+
+// IO direction
 assign uio_oe = 8'hFF;
 
 endmodule
