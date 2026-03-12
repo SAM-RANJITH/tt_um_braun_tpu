@@ -1,4 +1,4 @@
-##How it works
+## How it works
 
 This project implements a tiny matrix multiplication accelerator inspired by the Tensor Processing Unit (TPU) architecture used in machine learning accelerators.
 
@@ -122,7 +122,7 @@ Processing elements compute multiply-accumulate operations.
 
 Final matrix results are sent to the output pins.
 
-##How to test
+## How to test
 
 The design can be simulated using a Verilog testbench.
 
@@ -190,7 +190,7 @@ Waveforms can be viewed using:
 
 gtkwave tb.fst
 
-##External hardware
+## External hardware
 
 The chip requires an external controller such as a microcontroller, FPGA, or development board to provide the clock signal and input data.
 
