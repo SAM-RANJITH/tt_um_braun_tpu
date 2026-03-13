@@ -8,7 +8,7 @@ project:
   clock_hz:     10000000
 
   # Tile size
-  tiles: "1x1"
+  tiles: "2x2"
 
   # Top module
   top_module:  "tt_um_braun_tpu"
