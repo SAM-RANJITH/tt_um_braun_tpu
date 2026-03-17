@@ -44,6 +44,10 @@ module tb ();
       .rst_n  (rst_n)
   );
 
+  initial begin
+    $dumpfile("waveform.vcd");
+    $dumpvars(0,tb);
+
   // Clock generation
   always #5 clk = ~clk;
 
