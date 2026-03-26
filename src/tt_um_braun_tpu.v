@@ -13,12 +13,10 @@ module tt_um_braun_tpu (
 
 wire rst = ~rst_n;
 
-// Avoid unused warnings
-wire _unused_ok = &{uio_in[7:1], 1'b0};
+// avoid unused warnings
+wire _unused = &{uio_in[7:1], 1'b0};
 
-/////////////////////////////
-// CONTROL UNIT
-/////////////////////////////
+//////////////// CONTROL //////////////////
 
 wire [2:0] mem_addr;
 wire mmu_en;
@@ -34,12 +32,10 @@ control_unit ctrl(
     .mmu_cycle(mmu_cycle)
 );
 
-/////////////////////////////
-// MEMORY
-/////////////////////////////
+//////////////// MEMORY //////////////////
 
-wire [7:0] weight0, weight1, weight2, weight3;
-wire [7:0] input0, input1, input2, input3;
+wire [7:0] w0,w1,w2,w3;
+wire [7:0] i0,i1,i2,i3;
 
 memory mem_inst(
     .clk(clk),
@@ -47,80 +43,50 @@ memory mem_inst(
     .data_in(ui_in),
     .addr(mem_addr),
     .we(uio_in[0]),
-    .weight0(weight0),
-    .weight1(weight1),
-    .weight2(weight2),
-    .weight3(weight3),
-    .input0(input0),
-    .input1(input1),
-    .input2(input2),
-    .input3(input3)
+    .w0(w0), .w1(w1), .w2(w2), .w3(w3),
+    .i0(i0), .i1(i1), .i2(i2), .i3(i3)
 );
 
-/////////////////////////////
-// SYSTOLIC ARRAY
-/////////////////////////////
+//////////////// SYSTOLIC //////////////////
 
-wire [7:0] a_data0, a_data1;
-wire [7:0] b_data0, b_data1;
+wire [7:0] a0,a1,b0,b1;
+wire [15:0] c00,c01,c10,c11;
 
-wire [15:0] c00, c01, c10, c11;
-
-systolic_array_2x2 array(
+systolic_array_2x2 sa(
     .clk(clk),
     .rst(rst),
     .ena(ena),
-    .a0(a_data0),
-    .a1(a_data1),
-    .b0(b_data0),
-    .b1(b_data1),
-    .c00(c00),
-    .c01(c01),
-    .c10(c10),
-    .c11(c11)
+    .a0(a0), .a1(a1),
+    .b0(b0), .b1(b1),
+    .c00(c00), .c01(c01),
+    .c10(c10), .c11(c11)
 );
 
-/////////////////////////////
-// MMU
-/////////////////////////////
+//////////////// MMU //////////////////
 
-wire [7:0] host_outdata;
+wire [7:0] host_out;
 wire done;
 
-mmu_feeder feeder(
+mmu_feeder mmu(
     .clk(clk),
     .rst(rst),
     .ena(ena),
     .en(mmu_en),
     .mmu_cycle(mmu_cycle),
 
-    .weight0(weight0),
-    .weight1(weight1),
-    .weight2(weight2),
-    .weight3(weight3),
+    .w0(w0), .w1(w1), .w2(w2), .w3(w3),
+    .i0(i0), .i1(i1), .i2(i2), .i3(i3),
 
-    .input0(input0),
-    .input1(input1),
-    .input2(input2),
-    .input3(input3),
+    .c00(c00), .c01(c01), .c10(c10), .c11(c11),
 
-    .c00(c00),
-    .c01(c01),
-    .c10(c10),
-    .c11(c11),
+    .a0(a0), .a1(a1),
+    .b0(b0), .b1(b1),
 
-    .a_data0(a_data0),
-    .a_data1(a_data1),
-    .b_data0(b_data0),
-    .b_data1(b_data1),
-
-    .host_outdata(host_outdata),
+    .host_out(host_out),
     .done(done)
 );
 
-/////////////////////////////
-// OUTPUT
-/////////////////////////////
+//////////////// OUTPUT //////////////////
 
 reg [7:0] out_reg;
 
@@ -128,11 +94,11 @@ always @(posedge clk) begin
     if (rst)
         out_reg <= 0;
     else if (ena && done)
-        out_reg <= host_outdata;
+        out_reg <= host_out;
 end
 
-assign uo_out  = out_reg;
-assign uio_out = 8'd0;
+assign uo_out  = (done) ? out_reg : 8'd0; // X-safe
+assign uio_out = 0;
 assign uio_oe  = 8'hFF;
 
 endmodule
