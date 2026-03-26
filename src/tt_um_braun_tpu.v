@@ -1,5 +1,3 @@
-`default_nettype none
-
 module tt_um_braun_tpu (
     input  wire [7:0] ui_in,
     output wire [7:0] uo_out,
@@ -16,7 +14,7 @@ module tt_um_braun_tpu (
 wire rst = ~rst_n;
 
 /////////////////////////////
-// Control Unit
+// CONTROL UNIT (FIXED)
 /////////////////////////////
 
 wire [2:0] mem_addr;
@@ -33,7 +31,7 @@ control_unit ctrl(
 );
 
 /////////////////////////////
-// Memory
+// MEMORY
 /////////////////////////////
 
 wire [7:0] weight0, weight1, weight2, weight3;
@@ -55,18 +53,13 @@ memory mem(
 );
 
 /////////////////////////////
-// Systolic Array
+// SYSTOLIC ARRAY
 /////////////////////////////
 
-wire [7:0] a_data0;
-wire [7:0] a_data1;
-wire [7:0] b_data0;
-wire [7:0] b_data1;
+wire [7:0] a_data0, a_data1;
+wire [7:0] b_data0, b_data1;
 
-wire [15:0] c00;
-wire [15:0] c01;
-wire [15:0] c10;
-wire [15:0] c11;
+wire [15:0] c00, c01, c10, c11;
 
 systolic_array_2x2 array(
     .clk(clk),
@@ -82,7 +75,7 @@ systolic_array_2x2 array(
 );
 
 /////////////////////////////
-// MMU Feeder
+// MMU FEEDER (FIXED)
 /////////////////////////////
 
 wire [7:0] host_outdata;
@@ -119,21 +112,17 @@ mmu_feeder feeder(
 );
 
 /////////////////////////////
-// Output Registers
+// OUTPUT
 /////////////////////////////
 
 reg [7:0] out_reg;
 
 always @(posedge clk) begin
     if (rst)
-        out_reg <= 8'd0;
+        out_reg <= 0;
     else if (done)
         out_reg <= host_outdata;
 end
-
-/////////////////////////////
-// TinyTapeout IO
-/////////////////////////////
 
 assign uo_out  = out_reg;
 assign uio_out = 8'd0;
