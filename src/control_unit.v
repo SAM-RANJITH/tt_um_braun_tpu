@@ -1,6 +1,7 @@
 module control_unit(
     input wire clk,
     input wire rst,
+    input wire ena,
     input wire load_en,
 
     output reg [2:0] mem_addr,
@@ -16,14 +17,13 @@ always @(posedge clk) begin
         mmu_cycle <= 0;
         mmu_en <= 0;
         load_count <= 0;
-    end else begin
+    end else if (ena) begin
 
         if (load_en) begin
             mem_addr <= mem_addr + 1;
             load_count <= load_count + 1;
         end
 
-        // Start compute AFTER loading 8 values
         if (load_count == 8) begin
             mmu_en <= 1;
             mmu_cycle <= mmu_cycle + 1;
