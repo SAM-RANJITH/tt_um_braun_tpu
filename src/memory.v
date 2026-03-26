@@ -1,5 +1,3 @@
-`default_nettype none
-
 module memory(
     input wire clk,
     input wire [7:0] data_in,
@@ -19,10 +17,9 @@ module memory(
 
 reg [7:0] mem [0:7];
 
-always @(posedge clk) begin
+always @(posedge clk)
     if (we)
         mem[addr] <= data_in;
-end
 
 assign weight0 = mem[0];
 assign weight1 = mem[1];
