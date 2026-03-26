@@ -1,20 +1,16 @@
-`default_nettype none
-
 module systolic_array_2x2(
+    input wire clk,
+    input wire rst,
 
-input wire clk,
-input wire rst,
+    input wire [7:0] a0,
+    input wire [7:0] a1,
+    input wire [7:0] b0,
+    input wire [7:0] b1,
 
-input wire [7:0] a0,
-input wire [7:0] a1,
-input wire [7:0] b0,
-input wire [7:0] b1,
-
-output wire [15:0] c00,
-output wire [15:0] c01,
-output wire [15:0] c10,
-output wire [15:0] c11
-
+    output wire [15:0] c00,
+    output wire [15:0] c01,
+    output wire [15:0] c10,
+    output wire [15:0] c11
 );
 
 wire [7:0] a00,a01,a10,a11;
