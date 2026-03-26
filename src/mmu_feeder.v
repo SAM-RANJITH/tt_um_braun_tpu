@@ -1,6 +1,7 @@
 module mmu_feeder (
     input wire clk,
     input wire rst,
+    input wire ena,
     input wire en,
     input wire [2:0] mmu_cycle,
 
@@ -16,6 +17,9 @@ module mmu_feeder (
     output reg done
 );
 
+// Avoid unused warning
+wire _unused_c11 = &c11;
+
 always @(posedge clk) begin
     if (rst) begin
         a_data0 <= 0;
@@ -24,7 +28,7 @@ always @(posedge clk) begin
         b_data1 <= 0;
         host_outdata <= 0;
         done <= 0;
-    end else if (en) begin
+    end else if (ena && en) begin
         done <= 0;
 
         case (mmu_cycle)
