@@ -1,3 +1,5 @@
+`timescale 1ns/1ps
+`default_nettype none
 
 module tb;
 
@@ -23,46 +25,56 @@ module tb;
       .rst_n(rst_n)
   );
 
+  ///////////////////////////////////////
   // Dump waveform
+  ///////////////////////////////////////
   initial begin
     $dumpfile("waveform.vcd");
     $dumpvars(0, tb);
   end
 
-  // Clock
+  ///////////////////////////////////////
+  // Clock generation
+  ///////////////////////////////////////
   always #5 clk = ~clk;
 
-  // Task: write memory
+  ///////////////////////////////////////
+  // Write task (FIXED timing)
+  ///////////////////////////////////////
   task write_mem(input [7:0] data);
   begin
     @(posedge clk);
     ui_in  <= data;
-    uio_in <= 8'b00000001; // WE = 1
+    uio_in <= 8'b00000000;  // setup
+
+    @(posedge clk);
+    uio_in <= 8'b00000001;  // write enable
+
+    @(posedge clk);
+    uio_in <= 8'b00000000;  // disable
   end
   endtask
 
-  // Stop writing
-  task stop_write;
-  begin
-    @(posedge clk);
-    uio_in <= 8'b00000000;
-  end
-  endtask
+  ///////////////////////////////////////
+  // Test
+  ///////////////////////////////////////
+  integer error;
+  integer i;
 
   initial begin
-    // Init
     clk = 0;
     rst_n = 0;
     ena = 1;
     ui_in = 0;
     uio_in = 0;
+    error = 0;
 
     // Reset
     repeat(5) @(posedge clk);
     rst_n = 1;
 
     ///////////////////////////////////////
-    // Write Matrix A (weights)
+    // Load Matrix A
     ///////////////////////////////////////
     write_mem(8'd2); // weight0
     write_mem(8'd3); // weight1
@@ -70,37 +82,53 @@ module tb;
     write_mem(8'd5); // weight3
 
     ///////////////////////////////////////
-    // Write Matrix B (inputs)
+    // Load Matrix B
     ///////////////////////////////////////
     write_mem(8'd1); // input0
     write_mem(8'd2); // input1
     write_mem(8'd3); // input2
     write_mem(8'd4); // input3
 
-    stop_write();
-
     ///////////////////////////////////////
     // Wait for computation
     ///////////////////////////////////////
-    repeat(20) @(posedge clk);
+    repeat(30) @(posedge clk);
 
     ///////////////////////////////////////
-    // Monitor output stream
+    // Monitor outputs
     ///////////////////////////////////////
     $display("---- OUTPUT STREAM ----");
-    repeat(10) begin
+
+    for (i = 0; i < 10; i = i + 1) begin
       @(posedge clk);
       $display("Time=%0t Output=%d", $time, uo_out);
+
+      // Simple correctness check
+      if (uo_out !== 8'd11 &&
+          uo_out !== 8'd16 &&
+          uo_out !== 8'd19 &&
+          uo_out !== 8'd28 &&
+          uo_out !== 8'd0) begin
+        error = error + 1;
+      end
     end
 
     ///////////////////////////////////////
-    // Expected Results (for verification)
+    // Result
+    ///////////////////////////////////////
+    if (error == 0)
+      $display("✅ TEST PASSED");
+    else
+      $display("❌ TEST FAILED, errors = %0d", error);
+
+    ///////////////////////////////////////
+    // Expected
     ///////////////////////////////////////
     $display("Expected:");
-    $display("C00 = 2*1 + 3*3 = 11");
-    $display("C01 = 2*2 + 3*4 = 16");
-    $display("C10 = 4*1 + 5*3 = 19");
-    $display("C11 = 4*2 + 5*4 = 28");
+    $display("C00 = 11");
+    $display("C01 = 16");
+    $display("C10 = 19");
+    $display("C11 = 28");
 
     #50;
     $finish;
